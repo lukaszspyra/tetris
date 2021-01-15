@@ -19,13 +19,12 @@ public final class HallOfFame {
     private final DataWriter writer;
     private final Printer printer;
 
-    private List<HallOfFameMember> members;
+    private volatile List<HallOfFameMember> members;
 
     public HallOfFame(final Printer printer) {
         this.reader = new DataReader(PATH);
         this.writer = new DataWriter(PATH);
         this.printer = printer;
-        this.members = obtainMembers();
     }
 
     HallOfFame(final DataReader reader, final DataWriter writer, final Printer printer, final List<HallOfFameMember> members) {
@@ -47,6 +46,12 @@ public final class HallOfFame {
      * @return boolean if qualified to enter high scores
      */
     public boolean tryToEnter(final int points) {
+        synchronized (this) {
+            if (members == null) {
+                members = obtainMembers();
+            }
+        }
+
         if (members.isEmpty()) {
             return false;
         }
